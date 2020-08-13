@@ -1,5 +1,7 @@
 package com.mavenproject.supply.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mavenproject.supply.model.SaleRecord;
 import com.mavenproject.supply.model.SupplyRecord;
 import com.mavenproject.supply.service.SupplyService;
 import org.junit.jupiter.api.DisplayName;
@@ -19,6 +21,7 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
@@ -60,5 +63,27 @@ public class SupplyControllerTest {
         mockMvc.perform(get("/supply/{id}", 1))
 
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("POST - /supply/saleRecord - Successful")
+    public void testAddSaleRecordSuccessfully() throws Exception {
+        SupplyRecord supplyRecord = new SupplyRecord(1, "New Product", "Utilities", 100);
+
+        doReturn(Optional.of(supplyRecord)).when(supplyService).purchaseProduct(1, 10);
+
+        mockMvc.perform(post("/supply/saleRecord")
+                .content(new ObjectMapper().writeValueAsString(new SaleRecord(1, 10)))
+                .contentType(MediaType.APPLICATION_JSON_VALUE))
+
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+
+                .andExpect(header().string(HttpHeaders.LOCATION, "/supply/1"))
+
+                .andExpect(jsonPath("$.productId", is(1)))
+                .andExpect(jsonPath("$.productName", is("New Product")))
+                .andExpect(jsonPath("$.productCategory", is("Utilities")))
+                .andExpect(jsonPath("$.quantity", is(100)));
     }
 }

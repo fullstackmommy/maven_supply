@@ -1,14 +1,13 @@
 package com.mavenproject.supply.controller;
 
+import com.mavenproject.supply.model.SaleRecord;
 import com.mavenproject.supply.service.SupplyService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,6 +29,22 @@ public class SupplyController {
                         return ResponseEntity
                                 .ok()
                                 .location(new URI("/supply/" + supplyRecord.getProductId()))
+                                .body(supplyRecord);
+                    } catch (URISyntaxException e) {
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                    }
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/supply/saleRecord")
+    public ResponseEntity<?> newSaleRecord(@RequestBody SaleRecord saleRecord) {
+        LOGGER.info("Creating new sale record");
+        return supplyService.purchaseProduct(saleRecord.getProductId(), saleRecord.getQuantity())
+                .map(supplyRecord -> {
+                    try {
+                        return ResponseEntity
+                                .created(new URI("/supply/" + supplyRecord.getProductId()))
                                 .body(supplyRecord);
                     } catch (URISyntaxException e) {
                         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

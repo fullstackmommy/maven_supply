@@ -10,4 +10,8 @@ public class SupplyService {
     public Optional<SupplyRecord> getSupplyRecord(Integer id) {
         return Optional.empty();
     }
+
+    public Optional<SupplyRecord> purchaseProduct(Integer productId, Integer quantity) {
+        return Optional.empty();
+    }
 }
